@@ -1,26 +1,30 @@
 cmake_minimum_required(VERSION 3.22)
-project(llvm_template)
+project(compiler)
+
+# must specify PATH_TO_LLVM and LLVM_LIBS to cmake
+message("Using path of llvm -> " ${PATH_TO_LLVM})
+message("Using llvm libs -> " ${LLVM_LIBS})
+
+set (search_paths
+        ${PATH_TO_LLVM}
+        ${PATH_TO_LLVM}/lib/cmake
+        ${PATH_TO_LLVM}/lib/cmake/llvm
+        ${PATH_TO_LLVM}/lib/cmake/clang
+        ${PATH_TO_LLVM}/share/clang/cmake/
+        ${PATH_TO_LLVM}/share/llvm/cmake/
+        )
+
+message(${search_paths})
+
+find_package(LLVM REQUIRED CONFIG
+        PATHS ${search_paths}
+        NO_DEFAULT_PATH)
 
 set(CMAKE_CXX_STANDARD 20)
 
-find_package(LLVM REQUIRED CONFIG)
+include_directories(${PATH_TO_LLVM}/include)
+link_directories(${PATH_TO_LLVM}/lib)
 
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+add_executable(compiler main.cpp)
 
-# Set your project compile flags.
-# E.g. if using the C++ header files
-# you will need to enable C++11 support
-# for your compiler.
-
-include_directories(${LLVM_INCLUDE_DIRS})
-separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
-add_definitions(${LLVM_DEFINITIONS_LIST})
-
-add_executable(llvm_template main.cpp)
-# Find the libraries that correspond to the LLVM components
-# that we wish to use
-llvm_map_components_to_libnames(llvm_libs support core irreader)
-
-# Link against LLVM libraries
-target_link_libraries(llvm_template ${llvm_libs})
+target_link_libraries(compiler ${LLVM_LIBS} z)
